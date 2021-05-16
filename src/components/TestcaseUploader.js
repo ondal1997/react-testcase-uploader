@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import "./App.css";
+import React, { useEffect, useRef, useState } from "react";
 
 // 이 컴포넌트가 결합된 동안에, handleTestcases가 변경되지 않으며 handleTestcases 호출이 안전하다는 가정 하에 안전합니다.
-function TestcaseUploader({ handleTestcases }) {
+export default function TestcaseUploader({ handleTestcases }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const isMounted = useRef(true);
@@ -37,6 +36,7 @@ function TestcaseUploader({ handleTestcases }) {
         return;
       }
 
+      // type 필터링
       if (type.includes("in")) {
         type = "input";
       } else if (type.includes("out")) {
@@ -75,21 +75,3 @@ function TestcaseUploader({ handleTestcases }) {
     />
   );
 }
-
-function App() {
-  const [testcases, setTestcases] = useState([]);
-
-  return (
-    <div>
-      <TestcaseUploader handleTestcases={setTestcases} />
-      {testcases.map(({ input, output }, index) => (
-        <div key={index}>
-          <div>{input}</div>
-          <div>{output}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default App;

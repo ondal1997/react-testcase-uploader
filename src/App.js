@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-// 비동기 함수에서 마운트 여부 확인함, props가 바뀌는 것을 확인함
-function TestcaseUploader({ setTestcases }) {
+// 이 컴포넌트가 결합된 동안에, handleTestcases가 변경되지 않으며 handleTestcases 호출이 안전하다는 가정 하에 안전합니다.
+function TestcaseUploader({ handleTestcases }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const isMounted = useRef(true);
@@ -12,9 +12,6 @@ function TestcaseUploader({ setTestcases }) {
     };
   }, []);
 
-  const setTestcasesRef = useRef();
-  setTestcasesRef.current = setTestcases;
-
   const onUploadFile = (event) => {
     setIsLoading(true);
 
@@ -23,11 +20,11 @@ function TestcaseUploader({ setTestcases }) {
 
     const reader = new FileReader();
 
-    // 재귀 함수
+    // 비동기 재귀 클로저
     function readFile(index) {
-      // 재귀 종료
+      // 종료 시점
       if (index === files.length) {
-        setTestcases(Object.values(testcasesBuilder));
+        handleTestcases(Object.values(testcasesBuilder));
         setIsLoading(false);
         return;
       }
@@ -49,13 +46,9 @@ function TestcaseUploader({ setTestcases }) {
         return;
       }
 
-      // 비동기 콜백
+      // 콜백 정의
       reader.onload = () => {
         if (!isMounted.current) {
-          return;
-        }
-        if (setTestcases !== setTestcasesRef.current) {
-          setIsLoading(false);
           return;
         }
 
@@ -69,12 +62,17 @@ function TestcaseUploader({ setTestcases }) {
       reader.readAsText(file);
     }
 
-    // 재귀 시작
     readFile(0);
-  }
+  };
 
   return (
-    <input type="file" accept="text/plain" multiple onChange={onUploadFile} disabled={isLoading} />
+    <input
+      type="file"
+      accept="text/plain"
+      multiple
+      onChange={onUploadFile}
+      disabled={isLoading}
+    />
   );
 }
 
@@ -83,7 +81,13 @@ function App() {
 
   return (
     <div>
-      <TestcaseUploader setTestcases={setTestcases} />
+      <TestcaseUploader handleTestcases={setTestcases} />
+      {testcases.map(({ input, output }, index) => (
+        <div key={index}>
+          <div>{input}</div>
+          <div>{output}</div>
+        </div>
+      ))}
     </div>
   );
 }
